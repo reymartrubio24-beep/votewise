@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int             @id @default(autoincrement())
+  studentId String          @unique
+  name      String
+  email     String          @unique
+  password  String
+  role      String          @default("voter") // voter, admin, superadmin
+  participation Participation[]
+}
+
+model Election {
+  id        Int        @id @default(autoincrement())
+  title     String
+  startDate DateTime
+  endDate   DateTime
+  status    String     @default("draft") // draft, active, closed
+  positions Position[]
+}
+
+model Position {
+  id         Int             @id @default(autoincrement())
+  electionId Int
+  election   Election        @relation(fields: [electionId], references: [id])
+  title      String
+  maxVotes   Int             @default(1)
+  candidates Candidate[]
+  votes      Vote[]
+  participation Participation[]
+}
+
+model Candidate {
+  id         Int      @id @default(autoincrement())
+  positionId Int
+  position   Position @relation(fields: [positionId], references: [id])
+  name       String
+  photoUrl   String?
+  platform   String?
+  party      String?
+  votes      Vote[]
+}
+
+model Vote {
+  id          Int      @id @default(autoincrement())
+  positionId  Int
+  position    Position @relation(fields: [positionId], references: [id])
+  candidateId Int
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  votedAt     DateTime @default(now())
+}
+
+model Participation {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  positionId Int
+  position   Position @relation(fields: [positionId], references: [id])
+  createdAt  DateTime @default(now())
+  @@unique([userId, positionId])
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  voterHash  String
+  positionId Int
+  timestamp  DateTime @default(now())
+  ipAddress  String?
+}
