@@ -44,13 +44,13 @@
 
 ### 🛠️ Built With
 
-| Layer      | Technology                                                 |
-| ---------- | ---------------------------------------------------------- |
-| Frontend   | [React 19](https://reactjs.org/) + [Vite 5](https://vitejs.dev/) |
-| Backend    | [Node.js](https://nodejs.org/) (Express REST API)          |
-| Database   | [SQLite](https://sqlite.org/) via [Prisma ORM](https://www.prisma.io/) |
-| Styling    | Vanilla CSS3 with Modern Variables & Lucide Icons          |
-| Auth       | JWT (JSON Web Tokens) & Bcrypt Password Hashing            |
+| Layer    | Technology                                                             |
+| -------- | ---------------------------------------------------------------------- |
+| Frontend | [React 19](https://reactjs.org/) + [Vite 5](https://vitejs.dev/)       |
+| Backend  | [Node.js](https://nodejs.org/) (Express REST API)                      |
+| Database | [SQLite](https://sqlite.org/) via [Prisma ORM](https://www.prisma.io/) |
+| Styling  | Vanilla CSS3 with Modern Variables & Lucide Icons                      |
+| Auth     | JWT (JSON Web Tokens) & Bcrypt Password Hashing                        |
 
 ---
 
@@ -90,6 +90,7 @@ votewise/
 ### ⚙️ Installation
 
 1. **Clone & Install:**
+
 ```bash
 git clone https://github.com/username/votewise.git
 cd votewise
@@ -99,7 +100,8 @@ cd ../server && npm install
 ```
 
 2. **Environment Setup:**
-Create a `.env` file in the `server/` directory:
+   Create a `.env` file in the `server/` directory:
+
 ```env
 DATABASE_URL="file:./dev.db"
 JWT_SECRET="your_secret_key"
@@ -107,6 +109,7 @@ PORT=5000
 ```
 
 3. **Database Migration:**
+
 ```bash
 cd server
 npx prisma migrate dev --name init
@@ -114,6 +117,7 @@ npx prisma db seed
 ```
 
 4. **Start Development:**
+
 ```bash
 # From the root directory
 npm run dev
@@ -142,9 +146,10 @@ npm run dev
 
 ## 📫 Contact
 
-Project Link: [https://github.com/username/votewise](https://github.com/username/votewise)
+Project Link: [https://github.com/reymartrubio24-beep/votewise](https://github.com/reymartrubio24-beep/votewise)
 
 <!-- MARKDOWN LINKS & IMAGES -->
+
 [react-shield]: https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
 [react-url]: https://reactjs.org/
 [node-shield]: https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white
