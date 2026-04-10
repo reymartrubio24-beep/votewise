@@ -1,27 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Vote, ChartBar, Users } from 'lucide-react';
+import { ShieldCheck, Vote, ChartBar } from 'lucide-react';
+import api from '../api';
 
 export const Home = () => {
+  const [election, setElection] = useState(null);
+  const [isTimeUp, setIsTimeUp] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
-    minutes: 0,
     seconds: 0,
+    minutes: 0,
   });
 
   useEffect(() => {
-    // Set election end date to tomorrow for demo
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(17, 0, 0, 0);
+    const fetchElection = async () => {
+      try {
+        const { data } = await api.get('/election/countdown');
+        setElection(data);
+        if (data && new Date() > new Date(data.endDate)) {
+          setIsTimeUp(true);
+        }
+      } catch (err) {
+        console.error('Error fetching election:', err);
+      }
+    };
+    fetchElection();
+  }, []);
+
+  useEffect(() => {
+    if (!election) return;
+
+    const targetDate = new Date(election.status === 'active' ? election.endDate : election.startDate);
 
     const timer = setInterval(() => {
       const now = new Date();
-      const difference = tomorrow - now;
+      const difference = targetDate - now;
 
       if (difference <= 0) {
         clearInterval(timer);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        if (election.status === 'active') setIsTimeUp(true);
         return;
       }
 
@@ -34,7 +53,7 @@ export const Home = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [election]);
 
   return (
     <div style={{ textAlign: 'center' }}>
@@ -77,26 +96,43 @@ export const Home = () => {
         color: 'white',
         padding: '3rem'
       }}>
-        <h2 style={{ color: 'white', marginBottom: '2rem' }}>Election Countdown</h2>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
-          <div className="timer-box">
-             <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.days}</span>
-             <p>Days</p>
-          </div>
-          <div className="timer-box">
-             <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.hours}</span>
-             <p>Hours</p>
-          </div>
-          <div className="timer-box">
-             <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.minutes}</span>
-             <p>Minutes</p>
-          </div>
-          <div className="timer-box">
-             <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.seconds}</span>
-             <p>Seconds</p>
-          </div>
-        </div>
-        <p style={{ marginTop: '2rem', opacity: 0.8 }}>Time remaining until the polls close</p>
+        {election ? (
+          <>
+            <h2 style={{ color: 'white', marginBottom: '2rem' }}>{election.title} Countdown</h2>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
+              <div className="timer-box">
+                 <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.days}</span>
+                 <p>Days</p>
+              </div>
+              <div className="timer-box">
+                 <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.hours}</span>
+                 <p>Hours</p>
+              </div>
+              <div className="timer-box">
+                 <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.minutes}</span>
+                 <p>Minutes</p>
+              </div>
+              <div className="timer-box">
+                 <span style={{ fontSize: '3rem', fontWeight: 'bold' }}>{timeLeft.seconds}</span>
+                 <p>Seconds</p>
+              </div>
+            </div>
+            {isTimeUp && election.status === 'active' ? (
+              <div style={{ marginTop: '2.5rem' }}>
+                <Link to="/results" className="btn" style={{ background: 'white', color: 'var(--primary)', padding: '12px 30px' }}>
+                   View Final Election Results
+                </Link>
+                <p style={{ marginTop: '1rem', opacity: 0.8 }}>This election has officially ended.</p>
+              </div>
+            ) : (
+              <p style={{ marginTop: '2rem', opacity: 0.8 }}>
+                {election.status === 'active' ? 'Time remaining until the polls close' : 'Time until the polls open'}
+              </p>
+            )}
+          </>
+        ) : (
+          <h2 style={{ color: 'white' }}>No Upcoming Elections</h2>
+        )}
       </div>
 
       <style>{`

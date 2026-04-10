@@ -32,10 +32,30 @@ export const LogsModal = ({ isOpen, onClose }) => {
   useEffect(() => { if (isOpen) api.get('/admin/logs').then(res => setLogs(res.data)).catch(() => setLogs([])); }, [isOpen]);
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Audit Logs">
-      <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-          <thead><tr style={{ borderBottom: '2px solid #eee', textAlign: 'left' }}><th style={{ padding: '8px' }}>Voter Hash</th><th style={{ padding: '8px' }}>Position</th><th style={{ padding: '8px' }}>Time</th></tr></thead>
-          <tbody>{logs.map(log => (<tr key={log.id} style={{ borderBottom: '1px solid #eee' }}><td style={{ padding: '8px', fontFamily: 'monospace' }}>{log.voterHash}</td><td style={{ padding: '8px' }}>{log.positionId}</td><td style={{ padding: '8px' }}>{new Date(log.timestamp).toLocaleTimeString()}</td></tr>))}</tbody>
+      <div style={{ maxHeight: '500px', overflow: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #eee', textAlign: 'left', background: '#f8f9fa' }}>
+              <th style={{ padding: '12px 8px' }}>Voter Hash</th>
+              <th style={{ padding: '12px 8px' }}>Position</th>
+              <th style={{ padding: '12px 8px' }}>IP Adress</th>
+              <th style={{ padding: '12px 8px' }}>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.length === 0 ? (
+              <tr><td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: '#999' }}>No logs recorded yet.</td></tr>
+            ) : (
+              logs.map(log => (
+                <tr key={log.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '10px 8px', fontFamily: 'monospace', color: 'var(--secondary)' }}>{log.voterHash}</td>
+                  <td style={{ padding: '10px 8px' }}>{log.positionTitle}</td>
+                  <td style={{ padding: '10px 8px', color: '#666', fontSize: '0.75rem' }}>{log.ipAddress || '—'}</td>
+                  <td style={{ padding: '10px 8px' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
         </table>
       </div>
     </Modal>

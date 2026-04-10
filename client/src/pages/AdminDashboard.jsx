@@ -95,7 +95,15 @@ export const AdminDashboard = () => {
                   <React.Fragment key={elec.id}>
                     <tr style={{ borderBottom: '1px solid #eee' }}>
                       <td style={{ padding: '1rem', fontWeight: 600 }}><button onClick={() => setExpandedElection(expandedElection === elec.id ? null : elec.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600, fontSize: '1rem' }}>{expandedElection === elec.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}{elec.title}</button></td>
-                      <td style={{ padding: '1rem' }}><span style={{ background: elec.status === 'active' ? '#e8f5e9' : elec.status === 'closed' ? '#ffebee' : '#fff3e0', color: elec.status === 'active' ? '#2e7d32' : elec.status === 'closed' ? '#c62828' : '#e65100', padding: '4px 12px', borderRadius: '15px', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 }}>{elec.status}</span></td>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{ 
+                          background: elec.status === 'active' ? '#e8f5e9' : elec.status === 'done' ? '#e1f5fe' : elec.status === 'closed' ? '#ffebee' : '#fff3e0', 
+                          color: elec.status === 'active' ? '#2e7d32' : elec.status === 'done' ? '#0288d1' : elec.status === 'closed' ? '#c62828' : '#e65100', 
+                          padding: '4px 12px', borderRadius: '15px', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 600 
+                        }}>
+                          {elec.status}
+                        </span>
+                      </td>
                       <td style={{ padding: '1rem' }}>{elec.positions.length} Positions</td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', gap: '10px' }}>

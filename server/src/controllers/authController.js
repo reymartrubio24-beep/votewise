@@ -20,6 +20,19 @@ exports.login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Invalid password' });
 
+    // Restriction for voters: Can only login if there's an active running election
+    if (user.role === 'voter') {
+      const activeElections = await prisma.election.findMany({
+        where: {
+          status: 'active',
+          endDate: { gte: new Date() }
+        }
+      });
+      if (activeElections.length === 0) {
+        return res.status(403).json({ error: 'No active elections are currently running. Voting is closed or not yet started.' });
+      }
+    }
+
     const token = jwt.sign({ id: user.id, role: user.role, name: user.name, studentId: user.studentId }, process.env.JWT_SECRET);
     res.json({ token, user: { id: user.id, name: user.name, role: user.role, studentId: user.studentId } });
   } catch (error) {
@@ -31,7 +44,10 @@ exports.login = async (req, res) => {
 exports.getActiveElections = async (req, res) => {
   try {
     const elections = await prisma.election.findMany({
-      where: { status: 'active' },
+      where: { 
+        status: 'active',
+        endDate: { gte: new Date() }
+      },
       include: {
         positions: {
           include: {
@@ -53,7 +69,15 @@ exports.getAllElections = async (req, res) => {
       include: { positions: { include: { candidates: true } } },
       orderBy: { id: 'desc' }
     });
-    res.json(elections);
+    // Add dynamic 'processed' status
+    const processedElections = elections.map(e => {
+      let currentStatus = e.status;
+      if (e.status === 'active' && new Date() > new Date(e.endDate)) {
+        currentStatus = 'done';
+      }
+      return { ...e, status: currentStatus };
+    });
+    res.json(processedElections);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

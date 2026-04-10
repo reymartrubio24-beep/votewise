@@ -8,6 +8,7 @@ router.post('/votes', authenticateToken, voterController.submitVote);
 
 // Results
 router.get('/results/all', voterController.getPublicResults);
+router.get('/election/countdown', voterController.getDashboardElection);
 router.get('/admin/export/:id', authenticateToken, isAdmin, voterController.exportResults);
 
 // Voter Management

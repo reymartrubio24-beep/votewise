@@ -2,6 +2,7 @@ const prisma = require('../config/prisma');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const csv = require('csv-parser');
+const crypto = require('crypto');
 
 // VOTING
 exports.submitVote = async (req, res) => {
@@ -12,7 +13,22 @@ exports.submitVote = async (req, res) => {
       where: { userId_positionId: { userId, positionId } }
     });
     if (participation) return res.status(400).json({ error: 'Already voted' });
-    const ops = [prisma.participation.create({ data: { userId, positionId } })];
+
+    // Hashing studentId for anonymous logging
+    const voterHash = crypto.createHash('sha256').update(String(req.user.studentId)).digest('hex').substring(0, 10);
+    const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    const ops = [
+      prisma.participation.create({ data: { userId, positionId } }),
+      prisma.auditLog.create({
+        data: {
+          voterHash,
+          positionId,
+          ipAddress
+        }
+      })
+    ];
+    
     if (candidateId) ops.push(prisma.vote.create({ data: { positionId, candidateId } }));
     await prisma.$transaction(ops);
     res.json({ success: true });
@@ -127,8 +143,20 @@ exports.getStats = async (req, res) => {
 
 exports.getLogs = async (req, res) => {
   try {
-    const logs = await prisma.auditLog.findMany({ orderBy: { timestamp: 'desc' }, take: 100 });
-    res.json(logs);
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { timestamp: 'desc' },
+      take: 100
+    });
+    // Fetch associated positions for better readability if needed
+    const positions = await prisma.position.findMany();
+    const posMap = Object.fromEntries(positions.map(p => [p.id, p.title]));
+    
+    const detailedLogs = logs.map(log => ({
+      ...log,
+      positionTitle: posMap[log.positionId] || `Position #${log.positionId}`
+    }));
+
+    res.json(detailedLogs);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -148,6 +176,20 @@ exports.exportResults = async (req, res) => {
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=results.csv');
     res.send(csvStr);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getDashboardElection = async (req, res) => {
+  try {
+    // 1. Find the earliest active election
+    let election = await prisma.election.findFirst({
+      where: { status: 'active' },
+      orderBy: { endDate: 'asc' }
+    });
+
+    res.json(election);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
