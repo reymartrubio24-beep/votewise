@@ -25,7 +25,7 @@ export const Home = () => {
         console.error('Error fetching election:', err);
       }
     };
-    fetchElection();
+    fetchElection();                                                              
   }, []);
 
   useEffect(() => {
@@ -81,12 +81,12 @@ export const Home = () => {
         <div className="card">
           <Vote size={48} color="var(--accent)" style={{ marginBottom: '1rem' }} />
           <h3>One Vote Policy</h3>
-          <p>Every student is entitled to one vote per position. Our system enforces strict eligibility controls.</p>
+          <p>Every voter is entitled to one vote per position. Our system enforces strict eligibility controls.</p>
         </div>
         <div className="card">
           <ChartBar size={48} color="var(--accent)" style={{ marginBottom: '1rem' }} />
           <h3>Real-time Results</h3>
-          <p>Election officers and students can monitor live updates as votes are tallied fairly.</p>
+          <p>Election officers and voters can monitor live updates as votes are tallied fairly.</p>
         </div>
       </div>
 

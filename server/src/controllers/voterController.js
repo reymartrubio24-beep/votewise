@@ -132,9 +132,9 @@ exports.getStats = async (req, res) => {
   try {
     const voterCount = await prisma.user.count({ where: { role: 'voter' } });
     const electionCount = await prisma.election.count({ where: { status: 'active' } });
-    const totalVotes = await prisma.vote.count();
     const turnoutRaw = await prisma.participation.groupBy({ by: ['userId'] });
-    const turnout = voterCount > 0 ? ((turnoutRaw.length / voterCount) * 100).toFixed(1) : '0.0';
+    const totalVotes = turnoutRaw.length; // Represents total unique ballots cast
+    const turnout = voterCount > 0 ? ((totalVotes / voterCount) * 100).toFixed(1) : '0.0';
     res.json({ voterCount, electionCount, totalVotes, turnout });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -157,6 +157,15 @@ exports.getLogs = async (req, res) => {
     }));
 
     res.json(detailedLogs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.clearLogs = async (req, res) => {
+  try {
+    await prisma.auditLog.deleteMany();
+    res.json({ success: true, message: 'Audit logs cleared' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -52,7 +52,7 @@ export const Confirmation = () => {
 
       <div style={{ marginTop: '2rem' }}>
         <p style={{ color: '#888', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-          <Share2 size={16} /> Encourage your fellow students to vote!
+          <Share2 size={16} /> Encourage your fellow voters to vote!
         </p>
       </div>
     </div>

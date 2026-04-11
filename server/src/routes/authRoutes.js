@@ -13,4 +13,7 @@ router.post('/admin/elections', authenticateToken, isAdmin, authController.creat
 router.put('/admin/elections/:id', authenticateToken, isAdmin, authController.updateElection);
 router.delete('/admin/elections/:id', authenticateToken, isAdmin, authController.deleteElection);
 
+// Admin Settings
+router.put('/admin/password', authenticateToken, isAdmin, authController.changeAdminPassword);
+
 module.exports = router;

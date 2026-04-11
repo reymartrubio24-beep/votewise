@@ -20,5 +20,6 @@ router.post('/admin/voters/import', authenticateToken, isAdmin, upload.single('f
 // Admin Stats
 router.get('/admin/stats', authenticateToken, isAdmin, voterController.getStats);
 router.get('/admin/logs', authenticateToken, isAdmin, voterController.getLogs);
+router.delete('/admin/logs', authenticateToken, isAdmin, voterController.clearLogs);
 
 module.exports = router;

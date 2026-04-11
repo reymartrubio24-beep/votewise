@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, Vote, ShieldCheck, Home as HomeIcon, Menu, X, BarChart, User } from 'lucide-react';
+import { LogOut, Vote, ShieldCheck, Home as HomeIcon, Menu, X, BarChart, User, Settings, ArrowLeft } from 'lucide-react';
+import { ChangePasswordModal } from './admin/ChangePasswordModal';
 
 export const Layout = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -9,6 +10,7 @@ export const Layout = () => {
   const location = useLocation();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -98,10 +100,12 @@ export const Layout = () => {
 
         {/* NAVIGATION LINKS */}
         <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '20px' }}>
-          <NavItem to="/" icon={<HomeIcon size={22} />} label="Home" />
+          {!(location.pathname.startsWith('/admin') || (isAuthenticated && user?.role === 'admin')) && (
+            <NavItem to="/" icon={<HomeIcon size={22} />} label="Home" />
+          )}
           <NavItem to="/results" icon={<BarChart size={22} />} label="Live Results" />
           
-          {isAuthenticated && user.role === 'voter' && (
+          {isAuthenticated && user?.role === 'voter' && (
             <NavItem to="/dashboard" icon={<Vote size={22} />} label="My Ballot" />
           )}
           {isAuthenticated && user.role === 'admin' && (
@@ -114,8 +118,8 @@ export const Layout = () => {
                 {!isCollapsed && <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Access Portal</p>}
                 {isCollapsed && <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', width: '100%', margin: '10px 0' }}></div>}
               </div>
-              <NavItem to="/login" icon={<User size={22} />} label="Voter Login" />
-              <NavItem to="/admin/login" icon={<ShieldCheck size={22} />} label="Admin Login" />
+              {!location.pathname.startsWith('/admin') && <NavItem to="/login" icon={<User size={22} />} label="Student Login" />}
+              {location.pathname !== '/login' && <NavItem to="/admin/login" icon={<ShieldCheck size={22} />} label="Admin Login" />}
             </>
           )}
         </nav>
@@ -130,6 +134,23 @@ export const Layout = () => {
                   ID: {user.studentId || user.username}
                 </p>
               </div>
+            )}
+            {user.role === 'admin' && (
+              <button 
+                onClick={() => setShowPasswordModal(true)} 
+                style={{
+                  width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', 
+                  color: 'white', padding: '10px', borderRadius: 'var(--radius)', 
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                  justifyContent: (isCollapsed && !isMobile) ? 'center' : 'flex-start',
+                  gap: '10px', fontWeight: 600, transition: 'all 0.2s', marginBottom: '10px'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              >
+                <Settings size={20} />
+                {(!isCollapsed || isMobile) && "Change Password"}
+              </button>
             )}
             <button 
               onClick={handleLogout} 
@@ -193,6 +214,24 @@ export const Layout = () => {
         width: isMobile ? '100%' : (isCollapsed ? 'calc(100% - 80px)' : 'calc(100% - 260px)')
       }}>
         <div style={{ flex: 1, padding: isMobile ? '1.5rem 1rem' : '2rem 3rem', display: 'flex', flexDirection: 'column' }} className="fade-in">
+          {(location.pathname === '/login' || location.pathname === '/admin/login') && (
+            <div style={{ marginBottom: '2rem' }}>
+              <Link 
+                to="/results" 
+                style={{ 
+                  display: 'inline-flex', alignItems: 'center', gap: '6px', 
+                  color: 'var(--text-muted)', fontSize: '0.95rem', fontWeight: 500, 
+                  textDecoration: 'none', transition: 'color 0.2s ease',
+                  padding: '4px 8px', marginLeft: '-8px'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.color = 'var(--accent)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+              >
+                <ArrowLeft size={18} />
+                Back to Portals
+              </Link>
+            </div>
+          )}
           <Outlet />
         </div>
         
@@ -218,6 +257,7 @@ export const Layout = () => {
           }}
         />
       )}
+      <ChangePasswordModal isOpen={showPasswordModal} onClose={() => setShowPasswordModal(false)} />
     </div>
   );
 };

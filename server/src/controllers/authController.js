@@ -139,3 +139,24 @@ exports.deleteElection = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.changeAdminPassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Not authorized' });
+
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) return res.status(401).json({ error: 'Incorrect current password' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

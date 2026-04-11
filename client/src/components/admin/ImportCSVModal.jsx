@@ -29,9 +29,34 @@ export const ImportCSVModal = ({ isOpen, onClose, onSuccess }) => {
 
 export const LogsModal = ({ isOpen, onClose }) => {
   const [logs, setLogs] = useState([]);
-  useEffect(() => { if (isOpen) api.get('/admin/logs').then(res => setLogs(res.data)).catch(() => setLogs([])); }, [isOpen]);
+  
+  const fetchLogs = () => {
+    if (isOpen) api.get('/admin/logs').then(res => setLogs(res.data)).catch(() => setLogs([]));
+  };
+  useEffect(() => { fetchLogs(); }, [isOpen]);
+
+  const handleClearLogs = async () => {
+    if (!window.confirm('WARNING: Are you sure you want to completely clear the audit logs? This action cannot be undone.')) return;
+    try {
+      await api.delete('/admin/logs');
+      fetchLogs();
+    } catch (err) {
+      alert('Failed to clear logs');
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Audit Logs">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+        <button 
+          onClick={handleClearLogs} 
+          className="btn btn-outline" 
+          disabled={logs.length === 0}
+          style={{ borderColor: '#d32f2f', color: '#d32f2f', padding: '6px 12px', fontSize: '0.85rem' }}
+        >
+          Clear All Logs
+        </button>
+      </div>
       <div style={{ maxHeight: '500px', overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
           <thead>

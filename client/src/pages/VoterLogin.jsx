@@ -49,7 +49,7 @@ export const VoterLogin = () => {
             </div>
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>School ID (Password)</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>Student ID (Password)</label>
             <div style={{ position: 'relative' }}>
                <Lock size={20} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#666' }} />
                <input

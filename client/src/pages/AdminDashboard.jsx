@@ -81,7 +81,7 @@ export const AdminDashboard = () => {
         <div className="card" style={{ background: 'var(--primary)', color: 'white' }}><Users size={32} color="var(--accent)" /><p style={{ margin: 0, opacity: 0.8 }}>Registered Voters</p><h2 style={{ margin: 0, color: 'white' }}>{stats.voterCount}</h2></div>
         <div className="card"><Vote size={32} color="var(--accent)" /><p style={{ margin: 0, color: '#666' }}>Active Elections</p><h2 style={{ margin: 0 }}>{stats.electionCount}</h2></div>
         <div className="card"><CheckCircle size={32} color="#2e7d32" /><p style={{ margin: 0, color: '#666' }}>Voter Turnout</p><h2 style={{ margin: 0 }}>{stats.turnout}%</h2></div>
-        <div className="card"><BarChart2 size={32} color="var(--secondary)" /><p style={{ margin: 0, color: '#666' }}>Total Votes Cast</p><h2 style={{ margin: 0 }}>{stats.totalVotes}</h2></div>
+        <div className="card"><BarChart2 size={32} color="var(--secondary)" /><p style={{ margin: 0, color: '#666' }}>Total Ballots Cast</p><h2 style={{ margin: 0 }}>{stats.totalVotes}</h2></div>
       </div>
 
       <div className="card" style={{ marginBottom: '2rem' }}>
@@ -153,7 +153,7 @@ export const AdminDashboard = () => {
             <button onClick={() => setShowLogs(true)} className="btn btn-outline" style={{ flex: 1, minWidth: '150px' }}><FileText size={16} /> Audit Logs</button>
           </div>
         </div>
-        <VoterListPanel />
+        {/* <VoterListPanel /> */}
       </div>
 
       <NewElectionModal isOpen={showNewElection} onClose={() => setShowNewElection(false)} onSuccess={() => { setShowNewElection(false); showToast('Created!'); fetchData(); }} />
