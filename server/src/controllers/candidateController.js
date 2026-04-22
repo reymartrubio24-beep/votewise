@@ -33,6 +33,21 @@ exports.deletePosition = async (req, res) => {
 exports.createCandidate = async (req, res) => {
   const { positionId, name, party, platform, photoUrl } = req.body;
   try {
+    const voter = await prisma.user.findFirst({
+      where: { name, role: 'voter' }
+    });
+    if (!voter) return res.status(400).json({ error: `"${name}" is not a registered student/voter.` });
+
+    // Check if running for another position in the same election
+    const position = await prisma.position.findUnique({ where: { id: parseInt(positionId) } });
+    const existing = await prisma.candidate.findFirst({
+      where: {
+        name,
+        position: { electionId: position.electionId }
+      }
+    });
+    if (existing) return res.status(400).json({ error: `"${name}" is already running for a position in this election.` });
+
     const candidate = await prisma.candidate.create({
       data: { positionId: parseInt(positionId), name, party: party || null, platform: platform || null, photoUrl: photoUrl || null }
     });
@@ -46,6 +61,22 @@ exports.updateCandidate = async (req, res) => {
   const { id } = req.params;
   const { name, party, platform, photoUrl } = req.body;
   try {
+    const voter = await prisma.user.findFirst({
+      where: { name, role: 'voter' }
+    });
+    if (!voter) return res.status(400).json({ error: `"${name}" is not a registered student/voter.` });
+
+    // Check if running for another position in the same election (excluding self)
+    const currentCandidate = await prisma.candidate.findUnique({ where: { id: parseInt(id) }, include: { position: true } });
+    const existing = await prisma.candidate.findFirst({
+      where: {
+        name,
+        position: { electionId: currentCandidate.position.electionId },
+        NOT: { id: parseInt(id) }
+      }
+    });
+    if (existing) return res.status(400).json({ error: `"${name}" is already running for another position in this election.` });
+
     const candidate = await prisma.candidate.update({
       where: { id: parseInt(id) },
       data: { name, party, platform, photoUrl }

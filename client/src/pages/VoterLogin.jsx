@@ -19,9 +19,14 @@ export const VoterLogin = () => {
 
     try {
       const res = await api.post('/auth/login', { studentId, password });
+      
+      if (res.data.user.role !== 'voter') {
+        setError('Access denied. Please use the Administrator portal to login.');
+        return;
+      }
+
       login(res.data);
-      if(res.data.user.role === 'admin') navigate('/admin');
-      else navigate('/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Please try again.');
     } finally {
@@ -69,9 +74,7 @@ export const VoterLogin = () => {
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem' }}>
-          <a href="#" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>Forgot password?</a>
-        </p>
+
       </div>
     </div>
   );

@@ -67,6 +67,14 @@ export const AdminDashboard = () => {
     } catch (err) { showToast('Clear failed', 'error'); }
   }
 
+  const handleDeleteCandidate = async (candidateId) => {
+    if (!window.confirm('Delete this candidate?')) return;
+    try {
+      await api.delete(`/admin/candidates/${candidateId}`);
+      showToast('Candidate removed'); fetchData();
+    } catch (err) { showToast('Delete failed', 'error'); }
+  };
+
   if (loading) return <div style={{ textAlign: 'center', padding: '4rem' }}>Loading admin dashboard...</div>;
 
   return (
@@ -149,11 +157,12 @@ export const AdminDashboard = () => {
           <h3>Quick Actions</h3>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '1.5rem' }}>
             <button onClick={() => setShowImportCSV(true)} className="btn btn-outline" style={{ flex: 1, minWidth: '150px' }}><Upload size={16} /> Import Voters (CSV)</button>
-            <button onClick={handleClearVoters} className="btn btn-outline" style={{ flex: 1, minWidth: '150px', borderColor: '#d32f2f', color: '#d32f2f' }}><Trash2 size={16} /> Clear All Voters</button>
+
             <button onClick={() => setShowLogs(true)} className="btn btn-outline" style={{ flex: 1, minWidth: '150px' }}><FileText size={16} /> Audit Logs</button>
+            <button onClick={handleClearVoters} className="btn btn-outline" style={{ flex: 1, minWidth: '150px', borderColor: '#d32f2f', color: '#d32f2f' }}><Trash2 size={16} /> Clear All Voters</button>
           </div>
         </div>
-        {/* <VoterListPanel /> */}
+        <VoterListPanel />
       </div>
 
       <NewElectionModal isOpen={showNewElection} onClose={() => setShowNewElection(false)} onSuccess={() => { setShowNewElection(false); showToast('Created!'); fetchData(); }} />

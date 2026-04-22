@@ -58,23 +58,32 @@ export const VoterDashboard = () => {
                   <h2 style={{ marginBottom: '5px' }}>{election.title}</h2>
                   <p style={{ fontSize: '0.9rem', color: '#666' }}>Ends: {new Date(election.endDate).toLocaleString()}</p>
                 </div>
-                <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '5px 15px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
-                  ACTIVE
+                <div style={{ 
+                  background: new Date(election.endDate) < new Date() ? '#ffebee' : '#e8f5e9', 
+                  color: new Date(election.endDate) < new Date() ? '#c62828' : '#2e7d32', 
+                  padding: '5px 15px', 
+                  borderRadius: '20px', 
+                  fontSize: '0.85rem', 
+                  fontWeight: 600 
+                }}>
+                  {new Date(election.endDate) < new Date() ? 'ENDED' : 'ACTIVE'}
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                 {election.positions.map((pos) => {
                   const hasVoted = pos.participation && pos.participation.length > 0;
+                  const isEnded = new Date(election.endDate) < new Date();
                   return (
                     <div key={pos.id} style={{
                       padding: '1rem',
                       borderRadius: 'var(--radius)',
                       border: '1px solid #eee',
-                      background: hasVoted ? '#e8f5e9' : '#f8f9fa',
+                      background: hasVoted ? '#e8f5e9' : isEnded ? '#f5f5f5' : '#f8f9fa',
                       display: 'flex',
                       justifyContent: 'space-between',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      opacity: isEnded && !hasVoted ? 0.7 : 1
                     }}>
                       <div style={{ flex: 1 }}>
                         <h4 style={{ margin: 0, fontSize: '0.95rem' }}>{pos.title}</h4>
@@ -87,8 +96,8 @@ export const VoterDashboard = () => {
                           <CheckCircle size={16} /> Voted
                         </div>
                       ) : (
-                         <div style={{ color: '#e65100', fontSize: '0.85rem', fontWeight: 600 }}>
-                           Pending
+                         <div style={{ color: isEnded ? '#757575' : '#e65100', fontSize: '0.85rem', fontWeight: 600 }}>
+                           {isEnded ? 'Closed' : 'Pending'}
                          </div>
                       )}
                     </div>
@@ -101,6 +110,15 @@ export const VoterDashboard = () => {
                 {(() => {
                   const totalPositions = election.positions.length;
                   const votedCount = election.positions.filter(p => p.participation && p.participation.length > 0).length;
+                  const isEnded = new Date(election.endDate) < new Date();
+
+                  if (isEnded) {
+                    return (
+                      <button className="btn" disabled style={{ background: '#eee', color: '#888', padding: '10px 24px' }}>
+                        Voting Closed
+                      </button>
+                    );
+                  }
                   
                   if (votedCount === totalPositions && totalPositions > 0) {
                     return (

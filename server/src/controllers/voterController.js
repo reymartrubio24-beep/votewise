@@ -14,6 +14,16 @@ exports.submitVote = async (req, res) => {
     });
     if (participation) return res.status(400).json({ error: 'Already voted' });
 
+    // Verify election is still active and deadline hasn't passed
+    const position = await prisma.position.findUnique({
+      where: { id: parseInt(positionId) },
+      include: { election: true }
+    });
+    
+    if (!position || position.election.status !== 'active' || (position.election.endDate && new Date() > new Date(position.election.endDate))) {
+      return res.status(403).json({ error: 'Voting is closed for this election.' });
+    }
+
     // Hashing studentId for anonymous logging
     const voterHash = crypto.createHash('sha256').update(String(req.user.studentId)).digest('hex').substring(0, 10);
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -194,7 +204,10 @@ exports.getDashboardElection = async (req, res) => {
   try {
     // 1. Find the earliest active election
     let election = await prisma.election.findFirst({
-      where: { status: 'active' },
+      where: { 
+        status: 'active',
+        endDate: { gt: new Date() }
+      },
       orderBy: { endDate: 'asc' }
     });
 

@@ -17,7 +17,7 @@ export const ChangePasswordModal = ({ isOpen, onClose }) => {
     setSubmitting(true);
     setError(null);
     try {
-      await api.put('/admin/password', { currentPassword, newPassword });
+      await api.put('/admin/password', { currentPassword, newPassword }); 
       setSuccess(true);
       setTimeout(() => {
         setSuccess(false);

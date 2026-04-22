@@ -18,7 +18,7 @@ export const Home = () => {
       try {
         const { data } = await api.get('/election/countdown');
         setElection(data);
-        if (data && new Date() > new Date(data.endDate)) {
+        if (data && (data.status === 'done' || data.status === 'closed')) {
           setIsTimeUp(true);
         }
       } catch (err) {
@@ -40,7 +40,7 @@ export const Home = () => {
       if (difference <= 0) {
         clearInterval(timer);
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        if (election.status === 'active') setIsTimeUp(true);
+        if (election.status === 'done' || election.status === 'closed') setIsTimeUp(true);
         return;
       }
 
@@ -117,7 +117,7 @@ export const Home = () => {
                  <p>Seconds</p>
               </div>
             </div>
-            {isTimeUp && election.status === 'active' ? (
+            {(isTimeUp || election.status === 'done' || election.status === 'closed') ? (
               <div style={{ marginTop: '2.5rem' }}>
                 <Link to="/results" className="btn" style={{ background: 'white', color: 'var(--primary)', padding: '12px 30px' }}>
                    View Final Election Results

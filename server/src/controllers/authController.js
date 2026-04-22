@@ -23,9 +23,9 @@ exports.login = async (req, res) => {
     // Restriction for voters: Can only login if there's an active running election
     if (user.role === 'voter') {
       const activeElections = await prisma.election.findMany({
-        where: {
+        where: { 
           status: 'active',
-          endDate: { gte: new Date() }
+          endDate: { gt: new Date() }
         }
       });
       if (activeElections.length === 0) {
@@ -46,7 +46,7 @@ exports.getActiveElections = async (req, res) => {
     const elections = await prisma.election.findMany({
       where: { 
         status: 'active',
-        endDate: { gte: new Date() }
+        endDate: { gt: new Date() }
       },
       include: {
         positions: {
@@ -69,10 +69,9 @@ exports.getAllElections = async (req, res) => {
       include: { positions: { include: { candidates: true } } },
       orderBy: { id: 'desc' }
     });
-    // Add dynamic 'processed' status
     const processedElections = elections.map(e => {
       let currentStatus = e.status;
-      if (e.status === 'active' && new Date() > new Date(e.endDate)) {
+      if (e.status === 'active' && e.endDate && new Date() > new Date(e.endDate)) {
         currentStatus = 'done';
       }
       return { ...e, status: currentStatus };

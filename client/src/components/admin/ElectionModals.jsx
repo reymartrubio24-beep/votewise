@@ -73,16 +73,25 @@ export const NewElectionModal = ({ isOpen, onClose, onSuccess }) => {
 
 export const EditElectionModal = ({ isOpen, onClose, election, onSuccess }) => {
   const [title, setTitle] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [status, setStatus] = useState('draft');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { if (election) { setTitle(election.title); setStatus(election.status); } }, [election]);
+  useEffect(() => { 
+    if (election) { 
+      setTitle(election.title || ''); 
+      setStatus(election.status || 'draft');
+      if (election.startDate) setStartDate(new Date(election.startDate).toISOString().slice(0, 16));
+      if (election.endDate) setEndDate(new Date(election.endDate).toISOString().slice(0, 16));
+    } 
+  }, [election]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api.put(`/admin/elections/${election.id}`, { title, status });
+      await api.put(`/admin/elections/${election.id}`, { title, startDate, endDate, status });
       onSuccess();
     } catch (err) { alert(err.response?.data?.error || 'Failed'); } finally { setSubmitting(false); }
   };
@@ -91,7 +100,11 @@ export const EditElectionModal = ({ isOpen, onClose, election, onSuccess }) => {
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Election">
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <div><label style={labelStyle}>Title</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} required style={inputStyle} /></div>
-        <div><label style={labelStyle}>Status</label><select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}><option value="draft">Draft</option><option value="active">Active</option><option value="closed">Closed</option></select></div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div><label style={labelStyle}>Start Date</label><input type="datetime-local" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} /></div>
+          <div><label style={labelStyle}>End Date</label><input type="datetime-local" value={endDate} onChange={e => setEndDate(e.target.value)} style={inputStyle} /></div>
+        </div>
+        <div><label style={labelStyle}>Status</label><select value={status} onChange={e => setStatus(e.target.value)} style={inputStyle}><option value="draft">Draft</option><option value="active">Active</option><option value="closed">Closed</option><option value="done">Done</option></select></div>
         <button type="submit" disabled={submitting} className="btn btn-primary">Save Changes</button>
       </form>
     </Modal>

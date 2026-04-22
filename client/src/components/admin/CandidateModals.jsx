@@ -13,11 +13,43 @@ export const AddCandidateModal = ({ isOpen, onClose, context, onSuccess }) => {
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [voters, setVoters] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      api.get('/admin/voters').then(res => setVoters(res.data)).catch(() => setVoters([]));
+      if (context?.electionId) {
+        api.get('/admin/elections').then(res => {
+          const elec = res.data.find(e => e.id === context.electionId);
+          if (elec) {
+            const allCandNames = elec.positions.flatMap(p => p.candidates.map(c => c.name.toLowerCase()));
+            setExistingCandidateNames(allCandNames);
+          }
+        });
+      }
+    }
+  }, [isOpen, context]);
+
+  const [existingCandidateNames, setExistingCandidateNames] = useState([]);
 
   const handlePhotoChange = (e) => { const file = e.target.files[0]; if (file) { setPhoto(file); setPhotoPreview(URL.createObjectURL(file)); } };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate if candidate is a registered voter
+    const voterExists = voters.some(v => v.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if (!voterExists) {
+      alert(`Error: "${name}" is not a registered student/voter. Candidates must be registered students.`);
+      return;
+    }
+
+    // Check for duplicate in same election
+    if (existingCandidateNames.includes(name.trim().toLowerCase())) {
+      alert(`Error: "${name}" is already a candidate in this election. A student can only run for one position.`);
+      return;
+    }
+
     setSubmitting(true);
     try {
       let photoUrl = null;
@@ -26,7 +58,7 @@ export const AddCandidateModal = ({ isOpen, onClose, context, onSuccess }) => {
         const uploadRes = await api.post('/admin/candidates/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         photoUrl = uploadRes.data.url;
       }
-      await api.post('/admin/candidates', { positionId: context.positionId, name, party, platform, photoUrl });
+      await api.post('/admin/candidates', { positionId: context.positionId, name: name.trim(), party, platform, photoUrl });
       setName(''); setParty(''); setPlatform(''); setPhoto(null); setPhotoPreview(null);
       onSuccess();
     } catch (err) { alert(err.response?.data?.error || 'Failed'); } finally { setSubmitting(false); }
@@ -45,7 +77,22 @@ export const AddCandidateModal = ({ isOpen, onClose, context, onSuccess }) => {
           </div>
           <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
         </div>
-        <div><label style={labelStyle}>Full Name *</label><input type="text" value={name} onChange={e => setName(e.target.value)} required style={inputStyle} /></div>
+        <div>
+          <label style={labelStyle}>Full Name *</label>
+          <input 
+            type="text" 
+            list="voter-list"
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+            style={inputStyle} 
+            placeholder="Select or type student name..."
+          />
+          <datalist id="voter-list">
+            {voters.map(v => <option key={v.id} value={v.name} />)}
+          </datalist>
+          <p style={{ fontSize: '0.75rem', color: '#666', marginTop: '4px' }}>Candidate must be a registered student.</p>
+        </div>
         <div><label style={labelStyle}>Party</label><input type="text" value={party} onChange={e => setParty(e.target.value)} style={inputStyle} /></div>
         <div><label style={labelStyle}>Platform</label><textarea value={platform} onChange={e => setPlatform(e.target.value)} placeholder="Summary..." rows={3} style={{ ...inputStyle, resize: 'vertical' }} /></div>
         <button type="submit" disabled={submitting} className="btn btn-primary">{submitting ? 'Adding...' : 'Add Candidate'}</button>
@@ -62,6 +109,13 @@ export const EditCandidateModal = ({ isOpen, onClose, candidate, onSuccess }) =>
   const [newPhoto, setNewPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [voters, setVoters] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      api.get('/admin/voters').then(res => setVoters(res.data)).catch(() => setVoters([]));
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (candidate) {
@@ -75,6 +129,14 @@ export const EditCandidateModal = ({ isOpen, onClose, candidate, onSuccess }) =>
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate if candidate is a registered voter
+    const voterExists = voters.some(v => v.name.trim().toLowerCase() === name.trim().toLowerCase());
+    if (!voterExists) {
+      alert(`Error: "${name}" is not a registered student/voter.`);
+      return;
+    }
+
     setSubmitting(true);
     try {
       let currentPhotoUrl = photoUrl;
@@ -83,7 +145,7 @@ export const EditCandidateModal = ({ isOpen, onClose, candidate, onSuccess }) =>
         const uploadRes = await api.post('/admin/candidates/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         currentPhotoUrl = uploadRes.data.url;
       }
-      await api.put(`/admin/candidates/${candidate.id}`, { name, party, platform, photoUrl: currentPhotoUrl });
+      await api.put(`/admin/candidates/${candidate.id}`, { name: name.trim(), party, platform, photoUrl: currentPhotoUrl });
       onSuccess();
     } catch (err) { alert(err.response?.data?.error || 'Failed'); } finally { setSubmitting(false); }
   };
@@ -101,7 +163,20 @@ export const EditCandidateModal = ({ isOpen, onClose, candidate, onSuccess }) =>
           </div>
           <input id="edit-photo-upload" type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: 'none' }} />
         </div>
-        <div><label style={labelStyle}>Full Name *</label><input type="text" value={name} onChange={e => setName(e.target.value)} required style={inputStyle} /></div>
+        <div>
+          <label style={labelStyle}>Full Name *</label>
+          <input 
+            type="text" 
+            list="voter-list-edit"
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+            style={inputStyle} 
+          />
+          <datalist id="voter-list-edit">
+            {voters.map(v => <option key={v.id} value={v.name} />)}
+          </datalist>
+        </div>
         <div><label style={labelStyle}>Party</label><input type="text" value={party} onChange={e => setParty(e.target.value)} style={inputStyle} /></div>
         <div><label style={labelStyle}>Platform</label><textarea value={platform} onChange={e => setPlatform(e.target.value)} rows={3} style={{ ...inputStyle, resize: 'vertical' }} /></div>
         <button type="submit" disabled={submitting} className="btn btn-primary">Save Changes</button>
