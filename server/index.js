@@ -9,6 +9,14 @@ const candidateRoutes = require('./src/routes/candidateRoutes');
 const voterRoutes = require('./src/routes/voterRoutes');
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'votewise_secret_12345';
+}
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'file:./dev.db';
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
