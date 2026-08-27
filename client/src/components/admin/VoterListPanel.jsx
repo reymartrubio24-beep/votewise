@@ -7,12 +7,15 @@ export const VoterListPanel = () => {
   const [showAll, setShowAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const fetchVoters = () => api.get('/admin/voters').then(res => setVoters(res.data)).catch(() => setVoters([]));
+  const fetchVoters = () => api.get('/admin/voters')
+    .then(res => setVoters(Array.isArray(res.data) ? res.data : []))
+    .catch(() => setVoters([]));
+    
   useEffect(() => { fetchVoters(); }, []);
 
-  const filteredVoters = voters.filter(v => 
-    v.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    v.studentId.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredVoters = (voters || []).filter(v => 
+    (v.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (v.studentId || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const displayed = showAll ? filteredVoters : filteredVoters.slice(0, 20);
@@ -39,7 +42,7 @@ export const VoterListPanel = () => {
             <div key={v.id} style={{ fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', padding: '10px 8px', borderBottom: '1px solid #f0f0f0', alignItems: 'center' }}>
               <div><span style={{ fontWeight: 600 }}>{v.name}</span><span style={{ color: '#888', marginLeft: '10px' }}>{v.studentId}</span></div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <span style={{ background: v.participation.length > 0 ? '#e8f5e9' : '#fff3e0', color: v.participation.length > 0 ? '#2e7d32' : '#e65100', padding: '2px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 600 }}>{v.participation.length > 0 ? `Voted` : 'Not Voted'}</span>
+                <span style={{ background: (v.participation || []).length > 0 ? '#e8f5e9' : '#fff3e0', color: (v.participation || []).length > 0 ? '#2e7d32' : '#e65100', padding: '2px 10px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 600 }}>{(v.participation || []).length > 0 ? `Voted` : 'Not Voted'}</span>
               </div>
             </div>
           ))

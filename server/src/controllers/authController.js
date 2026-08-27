@@ -33,7 +33,8 @@ exports.login = async (req, res) => {
       }
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role, name: user.name, studentId: user.studentId }, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || 'votewise_secret_12345';
+    const token = jwt.sign({ id: user.id, role: user.role, name: user.name, studentId: user.studentId }, secret);
     res.json({ token, user: { id: user.id, name: user.name, role: user.role, studentId: user.studentId } });
   } catch (error) {
     res.status(500).json({ error: error.message });

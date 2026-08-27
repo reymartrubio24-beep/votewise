@@ -32,9 +32,18 @@ export const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [electionsRes, statsRes] = await Promise.all([ api.get('/admin/elections'), api.get('/admin/stats') ]);
-      setElections(electionsRes.data); setStats(statsRes.data);
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+      const [electionsRes, statsRes] = await Promise.all([ 
+        api.get('/admin/elections').catch(err => { console.error('Elections fetch error:', err); return { data: [] }; }), 
+        api.get('/admin/stats').catch(err => { console.error('Stats fetch error:', err); return { data: { voterCount: 0, electionCount: 0, totalVotes: 0, turnout: '0.0' } }; }) 
+      ]);
+      setElections(Array.isArray(electionsRes.data) ? electionsRes.data : []); 
+      setStats(statsRes.data || { voterCount: 0, electionCount: 0, totalVotes: 0, turnout: '0.0' });
+    } catch (err) { 
+      console.error(err); 
+      setElections([]);
+    } finally { 
+      setLoading(false); 
+    }
   };
   useEffect(() => { fetchData(); }, []);
 
@@ -86,15 +95,15 @@ export const AdminDashboard = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-        <div className="card" style={{ background: 'var(--primary)', color: 'white' }}><Users size={32} color="var(--accent)" /><p style={{ margin: 0, opacity: 0.8 }}>Registered Voters</p><h2 style={{ margin: 0, color: 'white' }}>{stats.voterCount}</h2></div>
-        <div className="card"><Vote size={32} color="var(--accent)" /><p style={{ margin: 0, color: '#666' }}>Active Elections</p><h2 style={{ margin: 0 }}>{stats.electionCount}</h2></div>
-        <div className="card"><CheckCircle size={32} color="#2e7d32" /><p style={{ margin: 0, color: '#666' }}>Voter Turnout</p><h2 style={{ margin: 0 }}>{stats.turnout}%</h2></div>
-        <div className="card"><BarChart2 size={32} color="var(--secondary)" /><p style={{ margin: 0, color: '#666' }}>Total Ballots Cast</p><h2 style={{ margin: 0 }}>{stats.totalVotes}</h2></div>
+        <div className="card" style={{ background: 'var(--primary)', color: 'white' }}><Users size={32} color="var(--accent)" /><p style={{ margin: 0, opacity: 0.8 }}>Registered Voters</p><h2 style={{ margin: 0, color: 'white' }}>{stats?.voterCount || 0}</h2></div>
+        <div className="card"><Vote size={32} color="var(--accent)" /><p style={{ margin: 0, color: '#666' }}>Active Elections</p><h2 style={{ margin: 0 }}>{stats?.electionCount || 0}</h2></div>
+        <div className="card"><CheckCircle size={32} color="#2e7d32" /><p style={{ margin: 0, color: '#666' }}>Voter Turnout</p><h2 style={{ margin: 0 }}>{stats?.turnout || '0.0'}%</h2></div>
+        <div className="card"><BarChart2 size={32} color="var(--secondary)" /><p style={{ margin: 0, color: '#666' }}>Total Ballots Cast</p><h2 style={{ margin: 0 }}>{stats?.totalVotes || 0}</h2></div>
       </div>
 
       <div className="card" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}><h3>Manage Elections</h3><p style={{ fontSize: '0.9rem', color: '#666' }}>{elections.length} election(s)</p></div>
-        {elections.length === 0 ? (<p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>No elections yet.</p>) : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}><h3>Manage Elections</h3><p style={{ fontSize: '0.9rem', color: '#666' }}>{(elections || []).length} election(s)</p></div>
+        {(elections || []).length === 0 ? (<p style={{ textAlign: 'center', color: '#999', padding: '2rem' }}>No elections yet.</p>) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr style={{ textAlign: 'left', borderBottom: '2px solid #eee' }}><th style={{ padding: '1rem' }}>Title</th><th style={{ padding: '1rem' }}>Status</th><th style={{ padding: '1rem' }}>Positions</th><th style={{ padding: '1rem' }}>Actions</th></tr></thead>
@@ -112,7 +121,7 @@ export const AdminDashboard = () => {
                           {elec.status}
                         </span>
                       </td>
-                      <td style={{ padding: '1rem' }}>{elec.positions.length} Positions</td>
+                      <td style={{ padding: '1rem' }}>{(elec.positions || []).length} Positions</td>
                       <td style={{ padding: '1rem' }}>
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button onClick={() => { setEditingElection(elec); setShowEditElection(true); }} className="btn btn-outline" style={{ padding: '6px 12px' }}><Edit2 size={14} /></button>
@@ -124,11 +133,11 @@ export const AdminDashboard = () => {
                     {expandedElection === elec.id && (
                       <tr>
                         <td colSpan="4" style={{ padding: '1.5rem', background: '#f8f9fa' }}>
-                          {elec.positions.map(pos => (
+                          {(elec.positions || []).map(pos => (
                             <div key={pos.id} style={{ marginBottom: '1.5rem' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}><h4 style={{ margin: 0, color: 'var(--secondary)' }}>{pos.title}</h4><button onClick={() => { setShowAddCandidate({ positionId: pos.id, positionTitle: pos.title, electionId: elec.id }); }} className="btn btn-outline" style={{ padding: '4px 10px', fontSize: '0.8rem' }}><UserPlus size={12} /> Add Candidate</button></div>
                               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                                {pos.candidates.map(c => (
+                                {(pos.candidates || []).map(c => (
                                   <div key={c.id} style={{ padding: '10px 15px', background: 'white', borderRadius: 'var(--radius)', border: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     {c.photoUrl && <img src={getImageUrl(c.photoUrl)} alt={c.name} style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }} />}
                                     <span><strong>{c.name}</strong></span>

@@ -9,7 +9,7 @@ export const ProtectedRoute = ({ role }) => {
     return <Navigate to="/" replace />;
   }
 
-  if (role && user.role !== role) {
+  if (role && user?.role !== role && !(role === 'admin' && user?.role === 'superadmin')) {
     return <Navigate to="/" replace />;
   }
 
