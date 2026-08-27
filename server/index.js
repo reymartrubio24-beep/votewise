@@ -22,6 +22,10 @@ app.use('/api', authRoutes);      // /api/auth/login, /api/elections, /api/admin
 app.use('/api', candidateRoutes); // /api/admin/positions, /api/admin/candidates
 app.use('/api', voterRoutes);    // /api/results/all, /api/votes, /api/admin/voters, /api/admin/stats
 
+app.use('/', authRoutes);
+app.use('/', candidateRoutes);
+app.use('/', voterRoutes);
+
 // Root
 app.get('/', (req, res) => res.json({ message: 'VoteWise API Running' }));
 
