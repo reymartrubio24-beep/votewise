@@ -10,7 +10,8 @@
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "db:push": "DATABASE_URL=\"file:./dev.db\" prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma",
     "db:seed": "DATABASE_URL=\"file:./dev.db\" node server/prisma/seed.js",
-    "build": "DATABASE_URL=\"file:./dev.db\" prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma && DATABASE_URL=\"file:./dev.db\" node server/prisma/seed.js && npm run build --workspace=client"
+   "build": "DATABASE_URL=\"file:./dev.db\" prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma && DATABASE_URL=\"file:./dev.db\" node server/prisma/seed.js && npm run build --workspace=client"
+
   },
   "dependencies": {
     "@prisma/client": "^6.19.2"
