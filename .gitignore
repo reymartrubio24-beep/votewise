@@ -36,3 +36,7 @@ voters_list_50.csv
 update_passwords.js
 server/update_passwords.js
 server/voters_list_50.csv
+
+# Vercel
+.vercel
+

@@ -25,5 +25,9 @@ app.use('/api', voterRoutes);    // /api/results/all, /api/votes, /api/admin/vot
 // Root
 app.get('/', (req, res) => res.json({ message: 'VoteWise API Running' }));
 
-// Start
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start if run directly
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
