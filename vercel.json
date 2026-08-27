@@ -1,11 +1,6 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "client/dist",
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "server/prisma/**"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",

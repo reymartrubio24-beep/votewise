@@ -8,9 +8,9 @@
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "db:push": "DATABASE_URL=\"file:./server/prisma/dev.db\" prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma",
-    "db:seed": "DATABASE_URL=\"file:./server/prisma/dev.db\" node server/prisma/seed.js",
-    "build": "DATABASE_URL=\"file:./server/prisma/dev.db\" prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma && DATABASE_URL=\"file:./server/prisma/dev.db\" node server/prisma/seed.js && npm run build --workspace=client"
+    "db:push": "prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma",
+    "db:seed": "node server/prisma/seed.js",
+    "build": "prisma db push --accept-data-loss --schema=./server/prisma/schema.prisma && node server/prisma/seed.js && npm run build --workspace=client"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2"
